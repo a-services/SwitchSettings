@@ -21,6 +21,8 @@ aset env1 env2
 
 See <<comparing_environments>> for details.
 
+NOTE: link:https://java.com[Java] should be installed on your computer to run this utility.
+
 == aset.properties
 
 `aset.properties` is a configuration file where you can provide your username/password
@@ -36,7 +38,7 @@ affect <<comparing_environments>> procedure.
 This utility expects all environment-related properties to be placed into `Setting_env` items, where `env` is the
 name of environment, like `Prod` or `Dev`. There also should be basic `Setting` item with the same set of properties.
 
-image:images/settings.png[Settings]
+image:https://github.com/a-services/SwitchSettings/raw/master/images/settings.png[Settings]
 
 Utility started as `aset dev` will replace properties in `Setting` item with values from `Setting_Dev`,
 making jQM project to use `Dev` environment.

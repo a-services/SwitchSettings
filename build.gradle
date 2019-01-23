@@ -69,6 +69,7 @@ task distr {
         }
 
         // Create shell scripts
+
         new File("build/distr/${baseName}-${version}/aset").text = """
             #!/usr/bin/env bash
             JAR=${baseName}-${version}.jar
@@ -79,6 +80,9 @@ task distr {
             set JAR=${baseName}-${version}.jar
             java -cp %JAR% io.appery.switchsettings.aset %*
         """.stripIndent().trim()
+        /* For Java 11:
+           NO_WARN=--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.invoke=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
+         */
 
         // Create zip file in `build`
         ant.zip(destfile: "build/${baseName}-${version}.zip") {
