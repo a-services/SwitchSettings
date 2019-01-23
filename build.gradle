@@ -1,0 +1,93 @@
+apply plugin: 'groovy'
+
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+group = 'io.appery'
+version = '1.00'
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    baseName = 'appery-settings-switcher'
+
+    manifest {
+        attributes "Main-Class": 'io.appery.switchsettings.aset'
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+dependencies {
+    compile 'org.apache.httpcomponents:httpclient:4.5.6'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    compile 'org.codehaus.groovy:groovy-all:2.4.15'
+}
+
+configurations {
+    asciidoclet
+}
+
+dependencies {
+    asciidoclet 'org.asciidoctor:asciidoclet:1.+'
+}
+
+javadoc {
+    options.docletpath = configurations.asciidoclet.files.asType(List)
+    options.doclet = 'org.asciidoctor.Asciidoclet'
+    options.links = [
+        'http://docs.oracle.com/javase/8/docs/api/',
+        'https://hc.apache.org/httpcomponents-client-ga/httpclient/apidocs/'
+    ]
+    options.noQualifiers = ['java.lang', 'java.util']
+    options.memberLevel = JavadocMemberLevel.PACKAGE
+    options.addStringOption "-base-dir", "${projectDir}"
+}
+
+task distr {
+    doLast {
+        def baseName = 'appery-settings-switcher'
+        println "--- version: " + version
+
+        // Delete existing `build/distr`
+        ant.delete(dir: "build/distr")
+
+        // Collect distribution files in `build/distr`.
+        // This preliminary step is needed to create "apperyunit-${version}" folder in archive.
+        ant.copy(todir: "build/distr/${baseName}-${version}") {
+            fileset(dir: "build/libs") {
+                include(name: "${baseName}-${version}.jar")
+            }
+            fileset(dir: ".") {
+                include(name: "README.html")
+                include(name: "aset.properties")
+            }
+        }
+
+        // Create shell scripts
+        new File("build/distr/${baseName}-${version}/aset").text = """
+            #!/usr/bin/env bash
+            JAR=${baseName}-${version}.jar
+            java -cp \$JAR io.appery.switchsettings.aset "\$@"
+        """.stripIndent().trim()
+        new File("build/distr/${baseName}-${version}/aset.bat").text = """
+            @echo off
+            set JAR=${baseName}-${version}.jar
+            java -cp %JAR% io.appery.switchsettings.aset %*
+        """.stripIndent().trim()
+
+        // Create zip file in `build`
+        ant.zip(destfile: "build/${baseName}-${version}.zip") {
+            zipfileset(dir: "build/distr") {
+                exclude(name: "${baseName}-${version}/aset")
+            }
+            zipfileset(dir: "build/distr", filemode: "755") {
+                include(name: "${baseName}-${version}/aset")
+            }
+        }
+    }
+}

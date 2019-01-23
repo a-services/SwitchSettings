@@ -1,0 +1,62 @@
+= SwitchSettings
+:toc: right
+:icons: font
+
+Utility to switch backend environments within jQM project in link:https://appery.io[Appery.io].
+
+
+It can be started with one parameter to switch `Settings` item in jQM project to `env`:
+
+```
+aset env
+```
+
+See <<project_setup>> for details.
+
+Or it can be started with two parameters to compare `env1` and `env2` environments:
+
+```
+aset env1 env2
+```
+
+See <<comparing_environments>> for details.
+
+== aset.properties
+
+`aset.properties` is a configuration file where you can provide your username/password
+for link:https://appery.io[Appery.io]
+as well as the name of jQM project.
+
+You can also turn database and server-code verifications `on` or `off` here to
+affect <<comparing_environments>> procedure.
+
+[[project_setup]]
+== jQM project setup
+
+This utility expects all environment-related properties to be placed into `Setting_env` items, where `env` is the
+name of environment, like `Prod` or `Dev`. There also should be basic `Setting` item with the same set of properties.
+
+image:images/settings.png[Settings]
+
+Utility started as `aset dev` will replace properties in `Setting` item with values from `Setting_Dev`,
+making jQM project to use `Dev` environment.
+
+Utility started as `aset prod` will replace properties in `Setting` item with values from `Setting_Prod`,
+making jQM project to use `Prod` environment.
+
+CAUTION: Be sure to create a version of jQM project in Appery before switching the environments
+to be able to rollback the changes.
+
+[[comparing_environments]]
+== Comparing environments
+
+While implementing the new features you can work on your backend changes in `Dev` environment.
+After the changes are tested good enough, you can move them to `Prod` environment, copying
+them manually from changed `Dev` server-codes and database.
+
+To ensure that all changes are copied properly you can run `aset dev prod` command to compare `Dev` and `Prod`
+backend environments. It will perform the checks to ensure that:
+
+- both databases have the same set of collections
+- every collection has the same set of fields
+- server-code sources are identical (though we expect them to use different libraries in `Dependencies` to point at different databases)
